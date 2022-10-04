@@ -1,103 +1,65 @@
 const express = require('express');
 
 const userRoutes = express.Router();
-const cardRoutes = express.Router();
-
+const movieRoutes = express.Router();
 const { celebrate, Joi } = require('celebrate');
+const { urlRegex } = require('../utils/constants');
 
 const {
-  getUsers,
-  getUserById,
   updateUserInfoById,
-  updateUserAvatarById,
   getMyInfo,
   signOut,
 } = require('../controllers/users');
 const {
-  createCard,
-  getCards,
-  deleteCardById,
-  likeCardById,
-  dislikeCardById,
-} = require('../controllers/cards');
+  createMovie,
+  getMovies,
+  deleteMovieById,
+} = require('../controllers/movies');
 
-userRoutes.get('/users', express.json(), getUsers);
-userRoutes.get('/users/me', express.json(), getMyInfo);
 userRoutes.get('/signout', express.json(), signOut);
-userRoutes.get(
-  '/users/:userId',
-  express.json(),
-  celebrate({
-    params: Joi.object().keys({
-      userId: Joi.string().alphanum().length(24),
-    }),
-  }),
-  getUserById,
-);
+userRoutes.get('/users/me', express.json(), getMyInfo);
 userRoutes.patch(
   '/users/me',
   express.json(),
   celebrate({
     body: Joi.object().keys({
-      name: Joi.string().min(2).max(30),
-      about: Joi.string().min(2).max(30),
+      name: Joi.string().required(),
+      email: Joi.string().required().regex(urlRegex),
     }),
   }),
   updateUserInfoById,
 );
-userRoutes.patch(
-  '/users/me/avatar',
+
+movieRoutes.get('/movies', express.json(), getMovies);
+movieRoutes.post(
+  '/movies',
   express.json(),
   celebrate({
     body: Joi.object().keys({
-      avatar: Joi.string().regex(/^https?:\/\/(?:www\.)?[-a-zA-Z0-9:%._\\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$/),
+      country: Joi.string().required(),
+      director: Joi.string().required(),
+      duration: Joi.string().required(),
+      year: Joi.string().required(),
+      description: Joi.string().required(),
+      image: Joi.string().required().regex(urlRegex),
+      trailer: Joi.string().required().regex(urlRegex),
+      nameRU: Joi.string().required(),
+      nameEN: Joi.string().required(),
+      thumbnail: Joi.string().required().regex(urlRegex),
+      movieId: Joi.string().required(),
     }),
   }),
-  updateUserAvatarById,
+  createMovie,
 );
-
-cardRoutes.get('/cards', express.json(), getCards);
-cardRoutes.post(
-  '/cards',
-  express.json(),
-  celebrate({
-    body: Joi.object().keys({
-      name: Joi.string().required().min(2).max(30),
-      link: Joi.string().required().regex(/^https?:\/\/(?:www\.)?[-a-zA-Z0-9:%._\\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$/),
-    }),
-  }),
-  createCard,
-);
-cardRoutes.delete(
-  '/cards/:cardId',
+movieRoutes.delete(
+  '/movies/:movieId',
   express.json(),
   celebrate({
     params: Joi.object().keys({
-      cardId: Joi.string().alphanum().length(24),
+      movieId: Joi.string().alphanum().length(24),
     }),
   }),
-  deleteCardById,
+  deleteMovieById,
 );
 
-cardRoutes.put(
-  '/cards/:cardId/likes',
-  express.json(),
-  celebrate({
-    params: Joi.object().keys({
-      cardId: Joi.string().alphanum().length(24),
-    }),
-  }),
-  likeCardById,
-);
-cardRoutes.delete(
-  '/cards/:cardId/likes',
-  express.json(),
-  celebrate({
-    params: Joi.object().keys({
-      cardId: Joi.string().alphanum().length(24),
-    }),
-  }),
-  dislikeCardById,
-);
-
-module.exports = { userRoutes, cardRoutes };
+module.exports = { userRoutes, movieRoutes };

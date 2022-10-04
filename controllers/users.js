@@ -10,64 +10,12 @@ require('dotenv').config();
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
-const createUser = async (req, res, next) => {
-  const {
-    name,
-    about,
-    avatar,
-    email,
-    password,
-  } = req.body;
-
-  if (!email || !password) {
-    return next(new AutorizationError('Введите логин или пароль'));
-  }
-
+const getMyInfo = async (req, res, next) => {
+  const userId = req.user._id;
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = await User.create({
-      name,
-      about,
-      avatar,
-      email,
-      password: hashedPassword,
-    });
-
-    return res.send(user);
-  } catch (err) {
-    if (err.name === 'ValidationError') {
-      return next(new BadRequestError('Переданы неккоректные данные пользователя'));
-    }
-    if (err.code === 11000) {
-      return next(new ConflictError('Пользователь с указанным email уже существует'));
-    }
-    return next();
-  }
-};
-
-const getUsers = async (req, res, next) => {
-  try {
-    const users = await User.find({});
-    return res.send(users);
-  } catch (e) {
-    return next();
-  }
-};
-
-const getUserById = async (req, res, next) => {
-  try {
-    const { userId } = req.params;
     const user = await User.findById(userId);
-    if (!user) {
-      return next(new NotFoundError('Такого пользователя не существует'));
-    }
-
     return res.send(user);
   } catch (e) {
-    if (e.name === 'CastError') {
-      return next(new BadRequestError('Переданы неккоректные данные пользователя'));
-    }
     return next();
   }
 };
@@ -76,7 +24,7 @@ const updateUserInfoById = async (req, res, next) => {
   try {
     const user = await User.findByIdAndUpdate(req.user._id, {
       name: req.body.name,
-      about: req.body.about,
+      email: req.body.email,
     }, { new: true, runValidators: true });
 
     if (!user) {
@@ -91,17 +39,33 @@ const updateUserInfoById = async (req, res, next) => {
   }
 };
 
-const updateUserAvatarById = async (req, res, next) => {
+const createUser = async (req, res, next) => {
+  const {
+    name,
+    email,
+    password,
+  } = req.body;
+
+  if (!name || !email || !password) {
+    return next(new AutorizationError('Заполните недостающие поля'));
+  }
+
   try {
-    const user = await User.findByIdAndUpdate(req.user._id, {
-      avatar: req.body.avatar,
-    }, { new: true });
-    if (!user) {
-      return next(new NotFoundError('Такого пользователя не существует'));
-    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+    });
 
     return res.send(user);
-  } catch (e) {
+  } catch (err) {
+    if (err.name === 'ValidationError') {
+      return next(new BadRequestError('Переданы неккоректные данные пользователя'));
+    }
+    if (err.code === 11000) {
+      return next(new ConflictError('Пользователь с указанным email уже существует'));
+    }
     return next();
   }
 };
@@ -136,16 +100,6 @@ const login = async (req, res, next) => {
   }
 };
 
-const getMyInfo = async (req, res, next) => {
-  const userId = req.user._id;
-  try {
-    const user = await User.findById(userId);
-    return res.send(user);
-  } catch (e) {
-    return next();
-  }
-};
-
 const signOut = async (req, res, next) => {
   try {
     return await res.clearCookie('jwt').send({ message: 'Куки очищены' });
@@ -156,10 +110,7 @@ const signOut = async (req, res, next) => {
 
 module.exports = {
   createUser,
-  getUsers,
-  getUserById,
   updateUserInfoById,
-  updateUserAvatarById,
   login,
   getMyInfo,
   signOut,
