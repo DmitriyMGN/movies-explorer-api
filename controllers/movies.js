@@ -2,6 +2,7 @@ const Movie = require('../models/movie');
 
 const { NotFoundError } = require('../errors/NotFoundError');
 const { BadRequestError } = require('../errors/BadRequestError');
+const { ForbiddenError } = require('../errors/ForbiddenError');
 
 const createMovie = async (req, res, next) => {
   try {
@@ -27,11 +28,18 @@ const getMovies = async (req, res, next) => {
 
 const deleteMovieById = async (req, res, next) => {
   try {
+    const currentUserId = req.user._id;
     const { movieId } = req.params;
     if (!movieId) {
       return next(new NotFoundError('Фильм не найден.'));
     }
-    await Movie.findByIdAndRemove(movieId);
+    const movie = await Movie.findById(movieId);
+    const movieOwner = movie.owner._id.toString();
+    if (movieOwner === currentUserId) {
+      await Movie.findByIdAndRemove(movieId);
+    } else {
+      return next(new ForbiddenError('Попытка удаления чужого фильма'));
+    }
     return res.send({ message: 'Фильм удален' });
   } catch (e) {
     if (e.name === 'CastError') {

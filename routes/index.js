@@ -24,7 +24,7 @@ userRoutes.patch(
   celebrate({
     body: Joi.object().keys({
       name: Joi.string().required(),
-      email: Joi.string().required().regex(urlRegex),
+      email: Joi.string().required(),
     }),
   }),
   updateUserInfoById,
@@ -42,7 +42,7 @@ movieRoutes.post(
       year: Joi.string().required(),
       description: Joi.string().required(),
       image: Joi.string().required().regex(urlRegex),
-      trailer: Joi.string().required().regex(urlRegex),
+      trailerLink: Joi.string().required().regex(urlRegex),
       nameRU: Joi.string().required(),
       nameEN: Joi.string().required(),
       thumbnail: Joi.string().required().regex(urlRegex),
@@ -56,7 +56,7 @@ movieRoutes.delete(
   express.json(),
   celebrate({
     params: Joi.object().keys({
-      movieId: Joi.string().alphanum().length(24),
+      movieId: Joi.string(),
     }),
   }),
   deleteMovieById,

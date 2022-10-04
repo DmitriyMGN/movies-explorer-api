@@ -4,7 +4,7 @@ const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const { errors, celebrate, Joi } = require('celebrate');
-const { userRoutes, cardRoutes } = require('./routes/index');
+const { userRoutes, movieRoutes } = require('./routes/index');
 const { createUser, login } = require('./controllers/users');
 const { auth } = require('./middlewares/auth');
 const { NotFoundError } = require('./errors/NotFoundError');
@@ -50,8 +50,6 @@ app.post(
       email: Joi.string().required().email(),
       password: Joi.string().required(),
       name: Joi.string().min(2).max(30),
-      about: Joi.string().min(2).max(30),
-      avatar: Joi.string().regex(/^https?:\/\/(?:www\.)?[-a-zA-Z0-9:%._\\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$/),
     }),
   }),
   createUser,
@@ -59,7 +57,7 @@ app.post(
 
 app.use(auth);
 app.use(userRoutes);
-app.use(cardRoutes);
+app.use(movieRoutes);
 app.use((req, res, next) => {
   try {
     return next(new NotFoundError('Страница не найдена.'));
@@ -81,7 +79,7 @@ app.use((err, req, res, next) => {
 });
 
 async function main() {
-  await mongoose.connect('mongodb://localhost:27017/mestodb', {
+  await mongoose.connect('mongodb://localhost:27017/bitfilmsdb', {
     useNewUrlParser: true,
     useUnifiedTopology: false,
   });
