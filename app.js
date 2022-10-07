@@ -3,9 +3,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const { errors, celebrate, Joi } = require('celebrate');
-const { userRoutes, movieRoutes } = require('./routes/index');
-const { createUser, login } = require('./controllers/users');
+const { errors } = require('celebrate');
 const { auth } = require('./middlewares/auth');
 const { NotFoundError } = require('./errors/NotFoundError');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
@@ -33,31 +31,10 @@ app.get('/crash-test', () => {
   }, 0);
 });
 
-app.post(
-  '/signin',
-  celebrate({
-    body: Joi.object().keys({
-      email: Joi.string().required().email(),
-      password: Joi.string().required().min(8),
-    }),
-  }),
-  login,
-);
-app.post(
-  '/signup',
-  celebrate({
-    body: Joi.object().keys({
-      email: Joi.string().required().email(),
-      password: Joi.string().required(),
-      name: Joi.string().min(2).max(30),
-    }),
-  }),
-  createUser,
-);
-
 app.use(auth);
-app.use(userRoutes);
-app.use(movieRoutes);
+app.use(require('./routes/users'));
+app.use(require('./routes/movies'));
+
 app.use((req, res, next) => {
   try {
     return next(new NotFoundError('Страница не найдена.'));

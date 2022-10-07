@@ -1,34 +1,14 @@
 const express = require('express');
 
-const userRoutes = express.Router();
 const movieRoutes = express.Router();
 const { celebrate, Joi } = require('celebrate');
 const { urlRegex } = require('../utils/constants');
 
 const {
-  updateUserInfoById,
-  getMyInfo,
-  signOut,
-} = require('../controllers/users');
-const {
   createMovie,
   getMovies,
   deleteMovieById,
 } = require('../controllers/movies');
-
-userRoutes.get('/signout', express.json(), signOut);
-userRoutes.get('/users/me', express.json(), getMyInfo);
-userRoutes.patch(
-  '/users/me',
-  express.json(),
-  celebrate({
-    body: Joi.object().keys({
-      name: Joi.string().required(),
-      email: Joi.string().required(),
-    }),
-  }),
-  updateUserInfoById,
-);
 
 movieRoutes.get('/movies', express.json(), getMovies);
 movieRoutes.post(
@@ -38,7 +18,7 @@ movieRoutes.post(
     body: Joi.object().keys({
       country: Joi.string().required(),
       director: Joi.string().required(),
-      duration: Joi.string().required(),
+      duration: Joi.number().required(),
       year: Joi.string().required(),
       description: Joi.string().required(),
       image: Joi.string().required().regex(urlRegex),
@@ -46,7 +26,7 @@ movieRoutes.post(
       nameRU: Joi.string().required(),
       nameEN: Joi.string().required(),
       thumbnail: Joi.string().required().regex(urlRegex),
-      movieId: Joi.string().required(),
+      movieId: Joi.number().required(),
     }),
   }),
   createMovie,
@@ -62,4 +42,4 @@ movieRoutes.delete(
   deleteMovieById,
 );
 
-module.exports = { userRoutes, movieRoutes };
+module.exports = movieRoutes;
