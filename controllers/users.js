@@ -22,6 +22,12 @@ const getMyInfo = async (req, res, next) => {
 
 const updateUserInfoById = async (req, res, next) => {
   try {
+    const emailValid = await User.findOne({ email: req.body.email });
+
+    if (emailValid) {
+      return next(new NotFoundError('Пользователь с таким email уже существует'));
+    }
+
     const user = await User.findByIdAndUpdate(req.user._id, {
       name: req.body.name,
       email: req.body.email,
@@ -30,6 +36,7 @@ const updateUserInfoById = async (req, res, next) => {
     if (!user) {
       return next(new NotFoundError('Такого пользователя не существует'));
     }
+
     return res.send(user);
   } catch (e) {
     if (e.name === 'ValidationError') {
@@ -80,7 +87,7 @@ const login = async (req, res, next) => {
   try {
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
-      return next(new AutorizationError('Такого пользователя не существует'));
+      return next(new AutorizationError('Неправильная почта или пароль'));
     }
 
     const isUserValid = await bcrypt.compare(password, user.password);

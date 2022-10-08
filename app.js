@@ -1,12 +1,16 @@
 const express = require('express');
+
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const { errors } = require('celebrate');
-const { auth } = require('./middlewares/auth');
+const router = require('./routes/index');
 const { NotFoundError } = require('./errors/NotFoundError');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
+require('dotenv').config();
+
+const { NODE_ENV, MONGO_URI } = process.env;
 
 const { PORT = 3000 } = process.env;
 
@@ -31,9 +35,7 @@ app.get('/crash-test', () => {
   }, 0);
 });
 
-app.use(auth);
-app.use(require('./routes/users'));
-app.use(require('./routes/movies'));
+app.use(router);
 
 app.use((req, res, next) => {
   try {
@@ -56,7 +58,7 @@ app.use((err, req, res, next) => {
 });
 
 async function main() {
-  await mongoose.connect('mongodb://localhost:27017/bitfilmsdb', {
+  await mongoose.connect(NODE_ENV === 'production' ? MONGO_URI : 'mongodb://localhost:27017/bitfilmsdb', {
     useNewUrlParser: true,
     useUnifiedTopology: false,
   });

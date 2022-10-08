@@ -36,10 +36,10 @@ movieRoutes.delete(
   express.json(),
   celebrate({
     params: Joi.object().keys({
-      movieId: Joi.string(),
+      movieId: Joi.string().hex().length(24),
     }),
   }),
   deleteMovieById,
 );
 
-module.exports = movieRoutes;
+module.exports = { movieRoutes };
