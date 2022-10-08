@@ -53,10 +53,6 @@ const createUser = async (req, res, next) => {
     password,
   } = req.body;
 
-  if (!name || !email || !password) {
-    return next(new AutorizationError('Заполните недостающие поля'));
-  }
-
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({

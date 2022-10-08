@@ -38,11 +38,7 @@ app.get('/crash-test', () => {
 app.use(router);
 
 app.use((req, res, next) => {
-  try {
-    return next(new NotFoundError('Страница не найдена.'));
-  } catch (err) {
-    return next();
-  }
+  next(new NotFoundError('Страница не найдена.'));
 });
 
 app.use(errorLogger);
