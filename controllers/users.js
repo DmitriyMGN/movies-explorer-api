@@ -22,12 +22,6 @@ const getMyInfo = async (req, res, next) => {
 
 const updateUserInfoById = async (req, res, next) => {
   try {
-    const emailValid = await User.findOne({ email: req.body.email });
-
-    if (emailValid) {
-      return next(new NotFoundError('Пользователь с таким email уже существует'));
-    }
-
     const user = await User.findByIdAndUpdate(req.user._id, {
       name: req.body.name,
       email: req.body.email,
@@ -41,6 +35,10 @@ const updateUserInfoById = async (req, res, next) => {
   } catch (e) {
     if (e.name === 'ValidationError') {
       return next(new BadRequestError('Переданы неккоректные данные пользователя'));
+    }
+
+    if (e.code === 11000) {
+      return next(new ConflictError('Пользователь с указанным e-mail уже существует'));
     }
     return next();
   }
