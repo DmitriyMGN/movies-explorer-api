@@ -22,7 +22,7 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: 'https://diploma.dmitriymgn.nomoredomains.icu',
+    origin: 'http://localhost:3000',
     credentials: true,
   }),
 );
